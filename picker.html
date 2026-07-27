@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Labels — your order</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./css/powerup.css">
+</head>
+<body>
+  <div class="picker" id="picker">
+    <input type="search" id="filter" placeholder="Filter labels…" autocomplete="off">
+    <div id="auth-panel" class="auth-panel" hidden>
+      <p>To toggle labels from here, allow the Power-Up to use the Trello API on your behalf (one time).</p>
+      <button id="btn-authorize" class="primary">Allow…</button>
+    </div>
+    <div id="list" class="picker-list" aria-label="Labels in your custom order"></div>
+    <div id="status" class="status" role="status"></div>
+    <div class="picker-footer">
+      <span class="muted">Click a label to toggle it</span>
+      <button id="btn-manage" class="subtle">Edit order…</button>
+    </div>
+  </div>
+
+  <script src="./js/config.js"></script>
+  <script src="./js/boot.js"></script>
+  <script src="./js/labels.js"></script>
+  <script src="./js/order.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/picker.js"></script>
+</body>
+</html>

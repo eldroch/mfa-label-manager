@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Label Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./css/powerup.css">
+</head>
+<body class="in-modal">
+  <div class="manager" id="manager">
+    <div class="manager-toolbar">
+      <button id="btn-new" class="primary" title="Create a new label">+ New label</button>
+      <button id="btn-sort-native" title="Arrange the list the way Trello sorts labels natively">Trello order</button>
+      <button id="btn-sort-name" title="Arrange the list alphabetically">A → Z</button>
+      <span class="spacer"></span>
+      <span id="save-status" class="status" role="status"></span>
+    </div>
+
+    <div id="auth-panel" class="auth-panel" hidden>
+      <p id="auth-text">Reordering works right away. To also <strong>create, rename, recolor or delete</strong>
+        labels here — and to toggle labels from the card picker — allow the Power-Up to use
+        the Trello API on your behalf.</p>
+      <button id="btn-authorize" class="primary">Allow…</button>
+    </div>
+
+    <div id="label-list" class="label-list" aria-label="Labels in your custom order"></div>
+
+    <div class="manager-footer">
+      <div id="global-status" class="status" role="status"></div>
+      <details class="advanced">
+        <summary>Make Trello's own label list follow this order (optional, advanced)</summary>
+        <div class="body">
+          <p>
+            Trello's built-in picker and card chips always sort by a fixed color sequence
+            (subtle → normal → bold green, then yellow, orange, red, purple, blue, sky, lime, pink,
+            black) — no Power-Up can change that screen directly. Two workarounds exist,
+            both of which really modify your labels:
+          </p>
+          <p>
+            <strong>1 · Number prefixes</strong> — renames labels like <code>“2· Bug”</code> so that
+            name sorting reproduces your order <em>within each color group</em>. (Trello has never
+            documented the within-color tie-break; community testing indicates it is by name, but
+            verify on your own board.) Automations that match label names may need updating.
+          </p>
+          <div class="sync-tools">
+            <button id="btn-prefix-apply">Add number prefixes</button>
+            <button id="btn-prefix-remove">Remove number prefixes</button>
+            <span id="sync-status" class="status"></span>
+          </div>
+          <p style="margin-top:10px">
+            <strong>2 · Recolor to match</strong> — reassigns colors following Trello's palette
+            sequence so your first 30 labels appear in <em>exactly</em> your custom order everywhere
+            in Trello. This overwrites every affected label's color (your previous colors are backed
+            up so you can undo), and colorless labels will gain a color, making them visible on card
+            fronts.
+          </p>
+          <div class="sync-tools">
+            <button id="btn-recolor-apply">Recolor to match order</button>
+            <button id="btn-recolor-undo">Undo recolor</button>
+            <span id="recolor-status" class="status"></span>
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <script src="./js/config.js"></script>
+  <script src="./js/boot.js"></script>
+  <script src="./js/labels.js"></script>
+  <script src="./js/order.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/manager.js"></script>
+</body>
+</html>

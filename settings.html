@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Label Manager settings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./css/powerup.css">
+</head>
+<body>
+  <div class="settings" id="settings">
+    <section>
+      <h3>Trello API access</h3>
+      <div class="rowline">
+        <span id="auth-state" class="muted">Checking…</span>
+        <span>
+          <button id="btn-authorize" class="primary" hidden>Allow…</button>
+          <button id="btn-revoke" hidden>Disconnect</button>
+        </span>
+      </div>
+      <p class="muted" id="auth-help">Needed only for editing labels and toggling them from the picker.
+        Custom ordering itself works without it.</p>
+    </section>
+    <section>
+      <h3>Custom order</h3>
+      <div class="rowline">
+        <span class="muted">Stored on this board, shared with all members.</span>
+        <button id="btn-clear-order">Reset to Trello order</button>
+      </div>
+    </section>
+    <div id="status" class="status" role="status"></div>
+  </div>
+
+  <script src="./js/config.js"></script>
+  <script src="./js/boot.js"></script>
+  <script src="./js/labels.js"></script>
+  <script src="./js/order.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/settings.js"></script>
+</body>
+</html>
