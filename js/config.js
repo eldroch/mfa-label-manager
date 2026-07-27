@@ -16,7 +16,7 @@
  * renaming / recoloring / deleting labels from the manager.
  */
 window.LM_CONFIG = {
-  APP_KEY: '', // <-- paste your Power-Up API key here
+  APP_KEY: 'f8809778c279ef05744558fd8e030db3', // <-- paste your Power-Up API key here
   APP_NAME: 'Label Manager',
 };
 
