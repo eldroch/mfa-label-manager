@@ -13,7 +13,7 @@
 
   function openManager(t) {
     return t.modal({
-      url: './manager.html',
+      url: window.LM_CONFIG.propagate('./manager.html'),
       title: 'Label Manager — custom label order',
       fullscreen: false,
       height: 680,
@@ -23,7 +23,7 @@
   function openPicker(t) {
     return t.popup({
       title: 'Labels — your order',
-      url: './picker.html',
+      url: window.LM_CONFIG.propagate('./picker.html'),
       height: 420,
     });
   }
@@ -31,7 +31,7 @@
   function openSettings(t) {
     return t.popup({
       title: 'Label Manager settings',
-      url: './settings.html',
+      url: window.LM_CONFIG.propagate('./settings.html'),
       height: 280,
     });
   }
@@ -54,6 +54,49 @@
           callback: openPicker,
         }];
       },
+
+      /*
+       * Trello's own label row on the card back is sorted by color and is not
+       * ours to change, so we render the same labels in the board's custom
+       * order alongside it.
+       */
+      'card-back-section': function (t) {
+        return {
+          title: 'Labels — your order',
+          icon: ICONS.light,
+          content: {
+            type: 'iframe',
+            url: t.signUrl(window.LM_CONFIG.propagate('./card-section.html')),
+            height: 52,
+          },
+          action: {
+            text: 'Edit',
+            callback: openPicker,
+          },
+        };
+      },
+
+      /*
+       * Optional card-front badges in custom order (off by default — the
+       * native chips are already there, so this is duplication the board has
+       * to opt into from the settings popup).
+       */
+      'card-badges': function (t) {
+        return t.get('board', 'shared', 'showBadges', false).then(function (enabled) {
+          if (!enabled) return [];
+          return Promise.all([t.card('labels'), window.LM_ORDER.loadOrder(t)]).then(function (res) {
+            var onCard = res[0].labels || [];
+            if (!onCard.length) return [];
+            return window.LM_ORDER.applyOrder(onCard, res[1]).map(function (label) {
+              return {
+                text: label.name || window.LM_LABELS.colorInfo(label.color).name,
+                color: window.LM_LABELS.badgeColor(label.color),
+              };
+            });
+          });
+        });
+      },
+
       'show-settings': openSettings,
     };
 

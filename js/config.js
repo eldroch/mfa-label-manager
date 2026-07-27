@@ -20,6 +20,32 @@ window.LM_CONFIG = {
   APP_NAME: 'Label Manager',
 };
 
+/*
+ * Serving more than one workspace from a single deployment.
+ *
+ * Custom Power-Up listings are scoped to one workspace, and each listing has
+ * its own API key. Instead of hosting a copy of these files per workspace,
+ * point each listing's iframe connector URL at the same index.html and add
+ * that listing's key as ?lmKey=..., e.g.
+ *
+ *   https://you.example.com/index.html?lmKey=<that listing's API key>
+ *
+ * The key above is used when no ?lmKey is present. Whichever key applies, add
+ * this deployment's origin to that key's Allowed Origins in the admin portal.
+ */
+(function () {
+  var LM_KEY_PARAM = 'lmKey';
+  var override = new URLSearchParams(window.location.search).get(LM_KEY_PARAM);
+  if (override) window.LM_CONFIG.APP_KEY = override;
+
+  // Carries the key override onto the popup/modal iframes this page opens.
+  window.LM_CONFIG.propagate = function (url) {
+    if (!override) return url;
+    return url + (url.indexOf('?') === -1 ? '?' : '&') +
+      LM_KEY_PARAM + '=' + encodeURIComponent(override);
+  };
+}());
+
 window.LM_CONFIG.hasRest = function () {
   return typeof window.LM_CONFIG.APP_KEY === 'string' && window.LM_CONFIG.APP_KEY.length > 0;
 };

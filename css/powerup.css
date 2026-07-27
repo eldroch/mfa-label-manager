@@ -253,6 +253,12 @@ input[type="text"]:focus, input[type="search"]:focus { border-color: #0c66e4; bo
   padding-top: 8px;
 }
 
+/* ---------- Card back section ---------- */
+
+body.in-section { padding: 0; background: transparent; }
+.card-section { padding: 2px 0 4px; }
+.chips-row { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+
 /* ---------- Settings ---------- */
 
 .settings section { margin-bottom: 14px; }

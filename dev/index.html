@@ -93,6 +93,7 @@
     <h1>Label Manager</h1><span class="pill">DEV HARNESS — mock Trello</span>
     <button id="open-manager">Board button: Label Order</button>
     <button id="open-picker">Card button: Labels (your order)</button>
+    <button id="open-section">Card back section</button>
     <button id="open-settings">Settings</button>
     <span style="flex:1"></span>
     <label><input type="checkbox" id="fail-next"> fail next API call</label>
@@ -241,6 +242,9 @@
       });
       document.getElementById('open-settings').addEventListener('click', function () {
         openFrame('./settings.html', 'Label Manager settings', 'popup');
+      });
+      document.getElementById('open-section').addEventListener('click', function () {
+        openFrame('./card-section.html', 'Labels — your order (card back section)', 'popup');
       });
       document.getElementById('frame-close').addEventListener('click', closeFrame);
       document.getElementById('toggle-auth').addEventListener('click', function () {

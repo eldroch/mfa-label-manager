@@ -275,6 +275,8 @@
       window.__mockRender = fn;
     },
     sizeTo: function () { return Promise.resolve(); },
+    // Real Trello appends a signature; for local dev the URL passes through.
+    signUrl: function (url) { return url; },
     getRestApi: function () {
       return {
         isAuthorized: function () { return Promise.resolve(state.token !== null); },

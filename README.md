@@ -23,7 +23,11 @@ truly fix it.
    Power-Up renders labels.
 2. **Replace the picking workflow**: a card button opens *your* ordered, filterable label picker
    that toggles labels on the card via the REST API.
-3. **Push the order into Trello's native UI with two (optional) tricks:**
+3. **Render the order on the card itself**, beside the native chips it cannot reorder:
+   a **card-back section** (“Labels — your order”) lists that card's labels correctly ordered,
+   and optional **card-front badges** do the same on the board view (off by default, since the
+   native chips are already there — enable in settings).
+4. **Push the order into Trello's native UI with two (optional) tricks:**
    - **Number prefixes** — renames labels `1· High`, `2· Medium`, … so name-sorting reproduces
      your order *within each color group*. (The within-color tie-break is community-observed,
      not officially documented — verify on your board.)
@@ -54,6 +58,7 @@ index.html            Power-Up connector (what Trello loads; registers capabilit
 manager.html/.js      Board-button modal: reorder + label CRUD + sync tools
 picker.html/.js       Card-button popup: ordered label toggling
 settings.html/.js     Settings popup: auth status, reset order
+card-section.html/.js Card-back section: this card's labels in your custom order
 js/config.js          ← put your Power-Up API key here
 js/labels.js          30-color palette + Trello's native sort comparator
 js/order.js           Order codec/persistence (8-char id suffixes; 8 KB-safe truncation)
@@ -89,8 +94,9 @@ A Power-Up is just static files served over HTTPS from an origin that allows bei
    - Workspace: yours (the Power-Up is private to that workspace unless you later publish it).
    - **Iframe connector URL**: your hosted `index.html`, e.g.
      `https://<you>.github.io/<repo>/index.html`.
-3. **Capabilities tab** — enable: `board-buttons`, `card-buttons`, `show-settings`,
-   `authorization-status`, `show-authorization`.
+3. **Capabilities tab** — enable: `board-buttons`, `card-buttons`, `card-back-section`,
+   `card-badges`, `show-settings`, `authorization-status`, `show-authorization`. A capability
+   left unticked here simply never renders, even though the code registers it.
 4. **API Key tab** → *Generate a new API Key*.
    - Copy the key into `js/config.js` → `APP_KEY`, and redeploy.
    - In **Allowed Origins**, add your hosting origin (e.g. `https://<you>.github.io`). Without
@@ -98,10 +104,74 @@ A Power-Up is just static files served over HTTPS from an origin that allows bei
    - The API key is a public identifier — committing it is normal for client-side Power-Ups. The
      secret is the per-member token Trello issues at authorization time; it stays in each
      member's browser.
-5. **Enable it on a board**: board menu → Power-Ups → made by you / custom → **Label Manager**.
+5. **Enable it on a board**: board → **Power-Ups** → the **Custom** category in the left sidebar
+   (or just search the directory for “Label Manager”) → Add.
+
+   The board **must be in the same workspace you selected when creating the listing** — custom
+   listings are scoped to one workspace, and the “Custom” category does not appear at all on
+   boards outside it (or on personal boards that belong to no workspace). To use it from several
+   workspaces, create one listing per workspace, all pointing at the same connector URL.
 6. Click the **Label Order** board button, drag labels, done. The first time someone uses a
    feature that writes through the API (toggling from the picker, renaming, etc.) they'll be
    asked to click **Allow** once. Reordering itself needs no authorization.
+
+## Serving several workspaces from one deployment
+
+Custom listings are scoped to one workspace and **each listing gets its own API key**, so using
+the Power-Up in a second workspace means a second listing. You do not need a second copy of these
+files: point each listing's iframe connector URL at the same `index.html` and pass that listing's
+key in the URL —
+
+```
+Listing A (your workspace):    https://you.example.com/index.html
+Listing B (client workspace):  https://you.example.com/index.html?lmKey=<listing B's API key>
+```
+
+`?lmKey=` overrides `APP_KEY` from `js/config.js` and is carried onto the popup/modal iframes
+automatically. Add the deployment origin to **Allowed Origins** for *each* key.
+
+Note that the custom order is stored per board, so the two workspaces share code but never share
+data.
+
+## Troubleshooting
+
+**A workspace is missing from the dropdown in the admin portal.** Only workspaces where you are a
+**Workspace admin** are offered — being admin on that workspace's *boards* is not the same thing,
+and workspace **guests** (invited to individual boards rather than to the workspace) never see it.
+Check your role under the workspace's **Members** page; if you can't see the workspace's
+**Settings** tab, you aren't a workspace admin. Enterprise-owned workspaces can additionally gate
+this above the workspace level. After a role change, re-login before rechecking — the dropdown is
+built at page load.
+
+**The card's labels still show in Trello's color order.** Expected — the chips on the card front
+and the “Labels” row on the card back are native Trello UI that no Power-Up can reorder. Your
+order appears in the **Labels — your order** section further down the card back, in the card
+button's picker, and (if enabled) in card-front badges. To move the *native* elements you must
+change colors, via **Recolor to match order**.
+
+**The card-back section or badges don't appear at all.** `card-back-section` / `card-badges` are
+probably unticked on the listing's Capabilities tab in the admin portal.
+
+**No “Custom” category in the board's Power-Ups directory.** There is no “Made by you” section —
+it's called **Custom**, and it only renders when at least one custom listing exists *for that
+board's workspace*. Confirm the workspace shown in the admin portal matches the workspace in the
+board header. Boards in another workspace, or in none at all, will never show it. Fix by moving
+the board or by adding a second listing in that workspace (same connector URL).
+
+**Board button never appears, but the Power-Up is enabled.** The connector URL is wrong or not
+reachable — open it directly in a browser; it must load over HTTPS and return the connector page,
+not a 404. Also confirm `board-buttons` is ticked on the listing's Capabilities tab.
+
+**The “Allow…” popup opens and immediately does nothing.** Your hosting origin is missing from
+**Allowed Origins** on the API Key tab. Add the scheme + host only (e.g.
+`https://you.github.io`), no path.
+
+**Everything loads but label edits fail with 401.** The key in `js/config.js` doesn't match the
+listing's API key, or the member's token was revoked — open the Power-Up's settings popup and
+reconnect.
+
+**Changes to the code don't show up.** Trello and GitHub Pages both cache aggressively; hard
+refresh (Ctrl+F5), and remember Pages can take a minute to publish.
 
 ## Limitations and honest notes
 

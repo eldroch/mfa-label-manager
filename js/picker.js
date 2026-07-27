@@ -161,7 +161,7 @@
 
       $('btn-manage').addEventListener('click', function () {
         t.modal({
-          url: './manager.html',
+          url: window.LM_CONFIG.propagate('./manager.html'),
           title: 'Label Manager — custom label order',
           fullscreen: false,
           height: 680,

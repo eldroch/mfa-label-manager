@@ -55,6 +55,19 @@
         });
       });
 
+      t.get('board', 'shared', 'showBadges', false).then(function (on) {
+        $('chk-badges').checked = !!on;
+      });
+      $('chk-badges').addEventListener('change', function (e) {
+        var on = e.target.checked;
+        t.set('board', 'shared', 'showBadges', on).then(function () {
+          setStatus(on ? 'Card-front badges on ✓' : 'Card-front badges off ✓', 'ok', 3000);
+        }).catch(function (err) {
+          e.target.checked = !on;
+          setStatus('Could not save: ' + (err && err.message || err), 'error');
+        });
+      });
+
       $('btn-clear-order').addEventListener('click', function () {
         ORDER.clearOrder(t).then(function () {
           setStatus('Custom order cleared — labels follow Trello’s native order again.', 'ok', 4000);

@@ -89,8 +89,22 @@
     return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
   }
 
+  /*
+   * Card badges accept only this fixed set of color names — not the 30 label
+   * colors — so a label's color is reduced to its base hue. "black" is not a
+   * valid badge color and falls back to light-gray, as do colorless labels.
+   */
+  var BADGE_COLORS = ['blue', 'green', 'orange', 'red', 'yellow', 'purple', 'pink', 'sky', 'lime'];
+
+  function badgeColor(color) {
+    if (!color) return 'light-gray';
+    var base = color.replace(/_(light|dark)$/, '');
+    return BADGE_COLORS.indexOf(base) !== -1 ? base : 'light-gray';
+  }
+
   window.LM_LABELS = {
     COLOR_ORDER: COLOR_ORDER,
+    badgeColor: badgeColor,
     HUES: NATIVE_HUE_ORDER,
     SHADES: SHADE_SUFFIX_ORDER,
     colorInfo: colorInfo,

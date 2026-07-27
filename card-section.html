@@ -2,18 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Label Manager — Power-Up connector</title>
+  <title>Labels — your order</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./css/powerup.css">
 </head>
-<body>
-  <!--
-    Hidden connector iframe. Trello loads this page for every board where the
-    Power-Up is enabled; it only registers capabilities (see js/connector.js).
-  -->
+<body class="in-section">
+  <div id="root" class="card-section">
+    <div id="chips" class="chips-row"></div>
+    <div id="status" class="status"></div>
+  </div>
+
   <script src="./js/config.js"></script>
   <script src="./js/boot.js"></script>
   <script src="./js/labels.js"></script>
   <script src="./js/order.js"></script>
-  <script src="./js/connector.js"></script>
+  <script src="./js/card-section.js"></script>
 </body>
 </html>
