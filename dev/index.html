@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Label Manager — Dev Harness</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      color: #172b4d;
+      background: #f1f2f4;
+    }
+    header {
+      background: #1d2125;
+      color: #fff;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    header h1 { font-size: 15px; margin: 0 12px 0 0; font-weight: 600; }
+    header .pill { font-size: 11px; background: #a54800; padding: 2px 8px; border-radius: 10px; }
+    header button {
+      font: inherit; border: none; border-radius: 3px; padding: 6px 10px; cursor: pointer;
+      background: #ffffff22; color: #fff;
+    }
+    header button:hover { background: #ffffff3b; }
+    header label { font-size: 12px; display: inline-flex; gap: 4px; align-items: center; }
+    main { display: flex; gap: 16px; padding: 16px; align-items: flex-start; flex-wrap: wrap; }
+
+    /* fake board panel */
+    .board {
+      flex: 0 0 380px;
+      background: linear-gradient(160deg, #0c66e4, #09326c);
+      border-radius: 10px;
+      padding: 14px;
+      color: #fff;
+    }
+    .board h2 { margin: 0 0 10px; font-size: 15px; }
+    .panel {
+      background: #fff;
+      color: #172b4d;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    .panel h3 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; color: #626f86; }
+    .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .chip {
+      display: inline-flex; align-items: center; height: 20px; padding: 0 8px;
+      border-radius: 3px; font-size: 12px; font-weight: 500; max-width: 100%;
+    }
+    .chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cardmock { background: #fff; border-radius: 8px; padding: 10px 12px; box-shadow: 0 1px 1px rgba(9,30,66,.25); color: #172b4d; }
+    .cardmock .title { font-weight: 500; margin: 6px 0 2px; }
+    .note { font-size: 11px; color: #dfe6ff; margin: 4px 2px 10px; }
+
+    /* stage for power-up iframes */
+    .stage { flex: 1 1 460px; min-width: 340px; }
+    .frame-shell {
+      background: #fff; border-radius: 8px; box-shadow: 0 8px 24px rgba(9,30,66,.25);
+      overflow: hidden; display: none;
+    }
+    .frame-shell.open { display: block; }
+    .frame-shell.popup { width: 320px; }
+    .frame-shell.modal { width: 100%; max-width: 780px; }
+    .frame-title {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 12px; border-bottom: 1px solid #dcdfe4; font-weight: 600; font-size: 13px;
+    }
+    .frame-title button { border: none; background: transparent; cursor: pointer; font-size: 14px; color: #626f86; }
+    .frame-shell iframe { display: block; width: 100%; border: none; height: 480px; }
+    .frame-shell.modal iframe { height: 620px; }
+
+    /* inspector */
+    .inspector { flex: 1 1 100%; background: #fff; border-radius: 8px; padding: 12px; }
+    .inspector h3 { margin: 0 0 6px; font-size: 13px; }
+    .inspector pre {
+      background: #f7f8f9; border: 1px solid #dcdfe4; border-radius: 6px;
+      padding: 8px; font-size: 11px; overflow: auto; max-height: 140px; margin: 6px 0;
+      white-space: pre-wrap; word-break: break-all;
+    }
+    .kv { font-size: 12px; color: #44546f; margin: 2px 0; }
+    .kv b { color: #172b4d; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Label Manager</h1><span class="pill">DEV HARNESS — mock Trello</span>
+    <button id="open-manager">Board button: Label Order</button>
+    <button id="open-picker">Card button: Labels (your order)</button>
+    <button id="open-settings">Settings</button>
+    <span style="flex:1"></span>
+    <label><input type="checkbox" id="fail-next"> fail next API call</label>
+    <button id="toggle-auth">Auth: …</button>
+    <button id="reset">Reset state</button>
+  </header>
+
+  <main>
+    <div class="board">
+      <h2>Product Roadmap <span style="font-weight:400;opacity:.8">(simulated board)</span></h2>
+      <div class="note">Left = what Trello natively shows (fixed color order). This is the part a
+        Power-Up cannot change; it CAN store your order and use it in its own picker.</div>
+      <div class="panel">
+        <h3>Native Trello label order</h3>
+        <div class="chips" id="native-chips"></div>
+      </div>
+      <div class="panel">
+        <h3>Your custom order (Power-Up)</h3>
+        <div class="chips" id="custom-chips"></div>
+      </div>
+      <div class="cardmock">
+        <h3 style="margin:0;font-size:11px;color:#626f86;text-transform:uppercase">Card</h3>
+        <div class="title" id="card-name">…</div>
+        <div class="chips" id="card-chips"></div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="frame-shell" id="shell">
+        <div class="frame-title"><span id="frame-title-text"></span><button id="frame-close">✕</button></div>
+        <iframe id="frame" title="Power-Up iframe"></iframe>
+      </div>
+    </div>
+
+    <div class="inspector">
+      <h3>Mock state inspector</h3>
+      <div class="kv">REST token: <b id="ins-token"></b></div>
+      <div class="kv">Board pluginData (shared) — <b id="ins-size"></b>:</div>
+      <pre id="ins-plugindata"></pre>
+      <div class="kv">Decoded custom order: <b id="ins-order"></b></div>
+    </div>
+  </main>
+
+  <script src="./mock-trello.js"></script>
+  <script src="../js/labels.js"></script>
+  <script src="../js/order.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var state = window.__MOCK_STATE__;
+      var SAVE_KEY = 'lm-mock-state';
+
+      // Restore persisted state (keep object identity — iframes share it).
+      try {
+        var saved = sessionStorage.getItem(SAVE_KEY);
+        if (saved) {
+          var parsed = JSON.parse(saved);
+          Object.keys(parsed).forEach(function (k) { state[k] = parsed[k]; });
+        }
+      } catch (e) { /* fresh start */ }
+
+      var refreshTimer = null;
+      function notify() {
+        if (refreshTimer) clearTimeout(refreshTimer);
+        refreshTimer = setTimeout(refresh, 60);
+      }
+
+      var shell = document.getElementById('shell');
+      var frame = document.getElementById('frame');
+      var frameTitle = document.getElementById('frame-title-text');
+
+      function openFrame(url, title, kind) {
+        var src = '../' + String(url).replace(/^\.\//, '');
+        src += (src.indexOf('?') === -1 ? '?' : '&') + 'mock=1';
+        shell.className = 'frame-shell open ' + kind;
+        frameTitle.textContent = title;
+        frame.src = src;
+      }
+      function closeFrame() {
+        shell.className = 'frame-shell';
+        frame.src = 'about:blank';
+      }
+
+      window.__MOCK__ = { state: state, notify: notify, openFrame: openFrame, closeFrame: closeFrame };
+
+      /* ---------- rendering ---------- */
+
+      function chip(label, into) {
+        var info = window.LM_LABELS.colorInfo(label.color);
+        var c = document.createElement('span');
+        c.className = 'chip';
+        c.style.background = info.bg;
+        c.style.color = info.fg;
+        var s = document.createElement('span');
+        s.textContent = label.name || info.name;
+        if (!label.name) s.style.fontStyle = 'italic';
+        c.appendChild(s);
+        into.appendChild(c);
+      }
+
+      function renderChips(id, labels) {
+        var box = document.getElementById(id);
+        box.textContent = '';
+        labels.forEach(function (l) { chip(l, box); });
+        if (!labels.length) box.textContent = '—';
+      }
+
+      function refresh() {
+        try { sessionStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {}
+
+        var orderStr = (state.pluginData['board:shared'] || {})[window.LM_ORDER.STORAGE_KEY] || '';
+        var native = state.board.labels.slice().sort(window.LM_LABELS.nativeCompare);
+        var custom = window.LM_ORDER.applyOrder(state.board.labels, orderStr);
+        var onCard = state.board.labels.filter(function (l) { return state.card.idLabels.indexOf(l.id) !== -1; });
+
+        renderChips('native-chips', native);
+        renderChips('custom-chips', custom);
+        renderChips('card-chips', onCard.slice().sort(window.LM_LABELS.nativeCompare));
+        document.getElementById('card-name').textContent = state.card.name;
+
+        document.getElementById('ins-token').textContent = state.token || '(not authorized)';
+        document.getElementById('fail-next').checked = !!state.failNext;
+        document.getElementById('toggle-auth').textContent = state.token ? 'Auth: ON (click to revoke)' : 'Auth: OFF (click to grant)';
+        var pd = JSON.stringify(state.pluginData['board:shared'] || {});
+        document.getElementById('ins-plugindata').textContent = pd;
+        document.getElementById('ins-size').textContent = pd.length + ' / 8192 chars';
+        document.getElementById('ins-order').textContent = custom.map(function (l) {
+          return l.name || '(' + window.LM_LABELS.colorInfo(l.color).name + ')';
+        }).join('  →  ');
+
+        // Let open Power-Up iframes re-render, like Trello does on data changes.
+        try {
+          if (frame.contentWindow && typeof frame.contentWindow.__mockRender === 'function') {
+            frame.contentWindow.__mockRender();
+          }
+        } catch (e) { /* frame mid-navigation */ }
+      }
+
+      /* ---------- controls ---------- */
+
+      document.getElementById('open-manager').addEventListener('click', function () {
+        openFrame('./manager.html', 'Label Manager — custom label order', 'modal');
+      });
+      document.getElementById('open-picker').addEventListener('click', function () {
+        openFrame('./picker.html', 'Labels — your order', 'popup');
+      });
+      document.getElementById('open-settings').addEventListener('click', function () {
+        openFrame('./settings.html', 'Label Manager settings', 'popup');
+      });
+      document.getElementById('frame-close').addEventListener('click', closeFrame);
+      document.getElementById('toggle-auth').addEventListener('click', function () {
+        state.token = state.token ? null : 'mock-token-manual';
+        notify();
+      });
+      document.getElementById('fail-next').addEventListener('change', function (e) {
+        state.failNext = e.target.checked;
+      });
+      document.getElementById('reset').addEventListener('click', function () {
+        sessionStorage.removeItem(SAVE_KEY);
+        window.location.reload();
+      });
+
+      refresh();
+      openFrame('./manager.html', 'Label Manager — custom label order', 'modal');
+    })();
+  </script>
+</body>
+</html>

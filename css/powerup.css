@@ -1,0 +1,283 @@
+/* Label Manager — shared styles for popup/modal iframes.
+   Sized to feel native inside Trello: 14px base, compact controls. */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", Ubuntu, sans-serif;
+  font-size: 14px;
+  color: #172b4d;
+  background: #ffffff;
+}
+
+body { padding: 12px; }
+body.in-modal { padding: 16px 20px 12px; height: 100vh; overflow: hidden; }
+
+h3 { margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #44546f; }
+
+.muted { color: #626f86; font-size: 12px; }
+.nowrap { white-space: nowrap; }
+
+/* ---------- Buttons ---------- */
+
+button {
+  font: inherit;
+  border: none;
+  border-radius: 3px;
+  padding: 6px 12px;
+  cursor: pointer;
+  background: #091e420f;
+  color: #172b4d;
+}
+button:hover { background: #091e4224; }
+button:disabled { opacity: .5; cursor: default; }
+button.primary { background: #0c66e4; color: #fff; }
+button.primary:hover { background: #0055cc; }
+button.danger { background: #ca3521; color: #fff; }
+button.danger:hover { background: #ae2a19; }
+button.subtle { background: transparent; }
+button.subtle:hover { background: #091e420f; }
+button.icon-btn {
+  padding: 4px 6px;
+  line-height: 1;
+  background: transparent;
+  color: #626f86;
+}
+button.icon-btn:hover { background: #091e4224; color: #172b4d; }
+
+input[type="text"], input[type="search"] {
+  font: inherit;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #8590a2;
+  border-radius: 3px;
+  outline: none;
+}
+input[type="text"]:focus, input[type="search"]:focus { border-color: #0c66e4; box-shadow: 0 0 0 1px #0c66e4; }
+
+/* ---------- Label chip ---------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-width: 48px;
+  max-width: 100%;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 3px;
+  font-weight: 500;
+  overflow: hidden;
+}
+.chip .chip-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chip.small { height: 22px; font-size: 12px; padding: 0 8px; min-width: 36px; }
+
+/* ---------- Status / toast line ---------- */
+
+.status {
+  min-height: 18px;
+  font-size: 12px;
+  color: #626f86;
+  padding: 2px 0;
+}
+.status.error { color: #ca3521; font-weight: 500; }
+.status.ok { color: #1f845a; }
+
+/* ---------- Auth panel ---------- */
+
+.auth-panel {
+  background: #f7f8f9;
+  border: 1px solid #dcdfe4;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 8px 0;
+}
+.auth-panel p { margin: 0 0 10px; font-size: 13px; color: #44546f; }
+
+/* ---------- Manager (modal) layout ---------- */
+
+.manager {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.manager-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding-bottom: 10px;
+}
+.manager-toolbar .spacer { flex: 1; }
+
+.label-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border: 1px solid #dcdfe4;
+  border-radius: 6px;
+  padding: 6px;
+  position: relative;
+  background: #fff;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: #fff;
+  position: relative;
+  transition: transform 140ms ease;
+  user-select: none;
+}
+.row:hover { background: #f7f8f9; }
+.row.dragging {
+  transition: none;
+  z-index: 10;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(9, 30, 66, .25);
+}
+.row .index {
+  width: 26px;
+  text-align: right;
+  font-size: 11px;
+  color: #8590a2;
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+.row .handle {
+  flex: none;
+  width: 22px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8590a2;
+  cursor: grab;
+  border-radius: 3px;
+  touch-action: none;
+}
+.row .handle:hover { background: #091e4224; color: #172b4d; }
+.row.dragging .handle { cursor: grabbing; }
+.row .chip { flex: 1 1 auto; min-width: 0; cursor: default; }
+.row .row-actions { display: flex; gap: 2px; flex: none; }
+
+.row.editing { background: #f7f8f9; }
+.row.editing input[type="text"] { flex: 1; }
+
+.drop-hint {
+  border-top: 2px solid #0c66e4;
+}
+
+/* ---------- Color picker popover ---------- */
+
+.color-pop {
+  position: absolute;
+  z-index: 30;
+  background: #fff;
+  border: 1px solid #dcdfe4;
+  border-radius: 6px;
+  box-shadow: 0 8px 16px rgba(9, 30, 66, .25);
+  padding: 8px;
+  width: 232px;
+}
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+.color-swatch {
+  height: 26px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  padding: 0;
+}
+.color-swatch:hover { filter: brightness(.94); }
+.color-swatch.selected { border-color: #172b4d; }
+.color-pop .no-color-btn {
+  width: 100%;
+  margin-top: 6px;
+}
+
+/* ---------- Picker (popup) layout ---------- */
+
+.picker { display: flex; flex-direction: column; gap: 8px; }
+.picker-list {
+  max-height: 292px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 2px;
+}
+.pick-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  padding: 2px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+.pick-row:hover { background: #091e420f; }
+.pick-row .chip { flex: 1 1 auto; min-width: 0; }
+.pick-row .check {
+  flex: none;
+  width: 20px;
+  text-align: center;
+  color: #1f845a;
+  font-weight: 700;
+  visibility: hidden;
+}
+.pick-row.on .check { visibility: visible; }
+.pick-row.busy { opacity: .55; pointer-events: none; }
+
+.picker-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #dcdfe4;
+  padding-top: 8px;
+}
+
+/* ---------- Settings ---------- */
+
+.settings section { margin-bottom: 14px; }
+.settings .rowline { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+
+/* ---------- Prefix sync section (manager footer) ---------- */
+
+.manager-footer {
+  border-top: 1px solid #dcdfe4;
+  margin-top: 10px;
+  padding-top: 8px;
+}
+.sync-tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+details.advanced summary {
+  cursor: pointer;
+  color: #44546f;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 0;
+}
+details.advanced .body { padding: 6px 0 2px; }
+details.advanced p { margin: 4px 0 8px; font-size: 12px; color: #626f86; }
+
+.empty-state {
+  text-align: center;
+  color: #626f86;
+  padding: 32px 12px;
+}
