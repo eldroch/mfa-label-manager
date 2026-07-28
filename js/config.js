@@ -33,16 +33,33 @@ window.LM_CONFIG = {
  * The key above is used when no ?lmKey is present. Whichever key applies, add
  * this deployment's origin to that key's Allowed Origins in the admin portal.
  */
+/*
+ * Cache busting. GitHub Pages serves static assets with `Cache-Control:
+ * max-age=600`, so for ten minutes browsers reuse them WITHOUT revalidating —
+ * long enough that a freshly deployed connector keeps running the old code
+ * inside Trello's long-lived iframe (which shows up as
+ * "PostMessageIO:UnsupportedCommand" for capabilities the old build lacked).
+ *
+ * BUMP THIS ON EVERY DEPLOY, and keep the ?v= values on the <script>/<link>
+ * tags in the .html files in sync with it.
+ */
+window.LM_CONFIG.VERSION = '4';
+
 (function () {
   var LM_KEY_PARAM = 'lmKey';
   var override = new URLSearchParams(window.location.search).get(LM_KEY_PARAM);
   if (override) window.LM_CONFIG.APP_KEY = override;
 
-  // Carries the key override onto the popup/modal iframes this page opens.
-  window.LM_CONFIG.propagate = function (url) {
-    if (!override) return url;
+  function addParam(url, key, value) {
     return url + (url.indexOf('?') === -1 ? '?' : '&') +
-      LM_KEY_PARAM + '=' + encodeURIComponent(override);
+      key + '=' + encodeURIComponent(value);
+  }
+
+  // Carries the key override onto the popup/modal iframes this page opens, and
+  // stamps the version so a new build is never served from a stale cache.
+  window.LM_CONFIG.propagate = function (url) {
+    var out = addParam(url, 'v', window.LM_CONFIG.VERSION);
+    return override ? addParam(out, LM_KEY_PARAM, override) : out;
   };
 }());
 

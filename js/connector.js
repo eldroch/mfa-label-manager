@@ -11,6 +11,12 @@
     light: new URL('./icons/tag-dark.svg', window.location.href).href,  // shown on light backgrounds
   };
 
+  // Absolute URL of the swatch icon for a label color (see card-badges).
+  function swatchUrl(color) {
+    var name = color && window.LM_LABELS.COLOR_ORDER.indexOf(color) !== -1 ? color : 'none';
+    return new URL('./icons/swatches/' + name + '.svg', window.location.href).href;
+  }
+
   function openManager(t) {
     return t.modal({
       url: window.LM_CONFIG.propagate('./manager.html'),
@@ -80,6 +86,12 @@
        * Optional card-front badges in custom order (off by default — the
        * native chips are already there, so this is duplication the board has
        * to opt into from the settings popup).
+       *
+       * A badge's `color` may only be one of ten base names, which would
+       * render subtle/normal/bold variants identically and misstate the
+       * label. So the badge stays neutral and carries a swatch icon in the
+       * label's exact palette color instead. Icons must be absolute URLs —
+       * they are rendered by Trello's page, not from inside our iframe.
        */
       'card-badges': function (t) {
         return t.get('board', 'shared', 'showBadges', false).then(function (enabled) {
@@ -90,7 +102,7 @@
             return window.LM_ORDER.applyOrder(onCard, res[1]).map(function (label) {
               return {
                 text: label.name || window.LM_LABELS.colorInfo(label.color).name,
-                color: window.LM_LABELS.badgeColor(label.color),
+                icon: swatchUrl(label.color),
               };
             });
           });

@@ -69,6 +69,8 @@ icons/                Board/card button icons
 dev/index.html        Local dev harness — full mock Trello, no account needed
 dev/mock-trello.js    Mock client library + mock REST API
 dev/test-order.js     Unit tests for the order codec (node dev/test-order.js)
+dev/make-swatches.js  Regenerates icons/swatches/ (exact-color badge icons)
+icons/swatches/       One SVG per label color, used as card-badge icons
 ```
 
 ## Local development
@@ -170,8 +172,17 @@ not a 404. Also confirm `board-buttons` is ticked on the listing's Capabilities 
 listing's API key, or the member's token was revoked — open the Power-Up's settings popup and
 reconnect.
 
-**Changes to the code don't show up.** Trello and GitHub Pages both cache aggressively; hard
-refresh (Ctrl+F5), and remember Pages can take a minute to publish.
+**Changes to the code don't show up / `PostMessageIO:UnsupportedCommand` in the console.**
+GitHub Pages serves assets with `Cache-Control: max-age=600`, so for ten minutes the browser
+reuses them *without revalidating*. Trello's connector iframe is long-lived, so it happily keeps
+running the previous `connector.js` — and when the admin portal has a capability enabled that the
+stale build never registered, every affected card logs
+`unsupported command: card-badges` (or `card-back-section`).
+
+Fix: hard-refresh the Trello tab (Ctrl+Shift+R), or wait out the 10 minutes. To avoid it
+entirely, **bump `LM_CONFIG.VERSION` in `js/config.js` and the matching `?v=` on the
+`<script>`/`<link>` tags in the `.html` files on every deploy** — the version is also stamped
+onto the popup/modal iframe URLs automatically.
 
 ## Limitations and honest notes
 
@@ -183,6 +194,18 @@ refresh (Ctrl+F5), and remember Pages can take a minute to publish.
 - **Prefix sync** relies on the community-observed name tie-break within a color; Atlassian has
   never documented it. It also really renames labels — Butler rules or filters that match label
   names need updating.
+- **Trello's own label UI cannot be hidden.** Not the chips on the card front, not the “Labels”
+  row on the card back. Power-Ups render only inside their own iframes and have no access to
+  native elements — a developer who tried to build exactly this
+  ([hide labels from card covers](https://lukasznojek.com/blog/2019/04/trello-power-up-to-hide-labels-and-fields-from-card-covers/))
+  abandoned the Power-Up approach and shipped a bookmarklet instead. So the Power-Up's ordered
+  views sit *alongside* Trello's, never in place of them. The only native lever: a label with no
+  color is hidden from card **fronts** (it still shows on the back) — so a fully colorless label
+  set removes the front chips, at the cost of all color.
+- **Card-front badges show color as a swatch icon, not as the badge color.** Badge `color` accepts
+  only ten base names, which would render subtle/normal/bold of a hue identically and misstate the
+  label; each badge instead carries an icon in the exact palette color (`icons/swatches/`,
+  regenerate with `node dev/make-swatches.js`).
 - **Big boards**: Trello allows ~950–1000 labels per board. Board-level Power-Up storage is
   8 KB, so the custom order is kept for roughly the first 790 labels (you'll see a notice if
   truncation ever happens; drag-ordering hundreds of labels is not a realistic workflow anyway).
