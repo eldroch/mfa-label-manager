@@ -64,6 +64,33 @@ function fakeLabel(i, name, color) {
     'got ' + out.map(l => l.name).join());
 }
 
+// 3b. priority set: encode/decode, membership, and partitioning
+{
+  const a = fakeLabel(10, 'Bug', 'red');
+  const b = fakeLabel(11, 'Docs', 'blue');
+  const c = fakeLabel(12, 'Hotfix', 'red_dark');
+  const str = ORDER.encodeIds([a, c]);
+  const set = ORDER.decodeIds(str);
+  check('priority round trip', ORDER.hasId(set, a.id) && ORDER.hasId(set, c.id));
+  check('non-priority excluded', !ORDER.hasId(set, b.id));
+  check('empty string decodes to empty set', ORDER.decodeIds('').size === 0);
+  check('garbage decodes to empty set', ORDER.decodeIds('nope').size === 0);
+
+  const [hi, lo] = ORDER.partition([a, b, c], set);
+  check('partition keeps priority first, order preserved',
+    hi.map(l => l.name).join() === 'Bug,Hotfix' && lo.map(l => l.name).join() === 'Docs',
+    hi.map(l => l.name).join() + ' | ' + lo.map(l => l.name).join());
+
+  const [hi2, lo2] = ORDER.partition([a, b, c], ORDER.decodeIds(''));
+  check('no priorities: everything stays in the low group',
+    hi2.length === 0 && lo2.length === 3);
+
+  // 'priority' badge mode shows hi only; 'all' shows hi then lo.
+  check('priority mode yields only starred labels', hi.length === 2);
+  check('all mode preserves priority-first ordering',
+    hi.concat(lo).map(l => l.name).join() === 'Bug,Hotfix,Docs');
+}
+
 // 4. saveOrder budget: 1000 labels cannot fit — encodeWithin (via saveOrder) truncates
 {
   const many = [];

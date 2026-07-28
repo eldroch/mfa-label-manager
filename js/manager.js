@@ -18,6 +18,7 @@
   var t = null;
   var boardId = null;
   var ordered = [];          // label objects in working order
+  var priority = new Set();  // suffixes of labels starred as priority
   var authorized = false;
   var saveTimer = null;
   var savePending = false;
@@ -72,9 +73,12 @@
 
   function refresh() {
     if (dragState || savePending) return Promise.resolve(); // don't clobber in-flight edits
-    return Promise.all([fetchLabels(), ORDER.loadOrder(t), API.isAuthorized(t)]).then(function (res) {
+    return Promise.all([
+      fetchLabels(), ORDER.loadOrder(t), API.isAuthorized(t), ORDER.loadPriority(t),
+    ]).then(function (res) {
       ordered = ORDER.applyOrder(res[0] || [], res[1]);
       authorized = res[2];
+      priority = res[3];
       updateAuthPanel();
       render();
     }).catch(function (err) {
@@ -139,6 +143,12 @@
 
     var actions = el('div', 'row-actions');
 
+    var isHi = ORDER.hasId(priority, label.id);
+    var star = el('button', 'icon-btn star' + (isHi ? ' on' : ''), isHi ? '★' : '☆');
+    star.title = isHi ? 'Priority label — click to unstar' : 'Mark as priority (kept front and centre)';
+    star.addEventListener('click', function () { togglePriority(label); });
+    actions.appendChild(star);
+
     var up = el('button', 'icon-btn', '▲');
     up.title = 'Move up';
     up.disabled = index === 0;
@@ -167,6 +177,22 @@
 
     row.appendChild(actions);
     return row;
+  }
+
+  /*
+   * Priority is stored independently of the order, so starring a label never
+   * moves it — it just marks it for the surfaces that show a short list.
+   */
+  function togglePriority(label) {
+    var suffix = label.id.slice(-8);
+    if (priority.has(suffix)) priority.delete(suffix); else priority.add(suffix);
+    render();
+    var starred = ordered.filter(function (l) { return ORDER.hasId(priority, l.id); });
+    ORDER.savePriority(t, starred).then(function () {
+      setStatus(saveStatusEl, 'Priority labels saved ✓', 'ok', 2000);
+    }).catch(function (err) {
+      setStatus(saveStatusEl, 'Could not save priority: ' + err.message, 'error');
+    });
   }
 
   function move(from, to) {

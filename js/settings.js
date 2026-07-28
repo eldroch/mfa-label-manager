@@ -55,15 +55,25 @@
         });
       });
 
-      t.get('board', 'shared', 'showBadges', false).then(function (on) {
-        $('chk-badges').checked = !!on;
+      // Read the current mode, falling back to the older boolean setting.
+      t.get('board', 'shared', 'badgeMode', null).then(function (mode) {
+        if (mode) return mode;
+        return t.get('board', 'shared', 'showBadges', false).then(function (on) {
+          return on ? 'all' : 'off';
+        });
+      }).then(function (mode) {
+        $('sel-badges').value = mode;
       });
-      $('chk-badges').addEventListener('change', function (e) {
-        var on = e.target.checked;
-        t.set('board', 'shared', 'showBadges', on).then(function () {
-          setStatus(on ? 'Card-front badges on ✓' : 'Card-front badges off ✓', 'ok', 3000);
+
+      $('sel-badges').addEventListener('change', function (e) {
+        var mode = e.target.value;
+        // Keep the legacy key in step so an older cached connector agrees.
+        Promise.all([
+          t.set('board', 'shared', 'badgeMode', mode),
+          t.set('board', 'shared', 'showBadges', mode !== 'off'),
+        ]).then(function () {
+          setStatus('Card front set to “' + e.target.selectedOptions[0].text + '” ✓', 'ok', 3000);
         }).catch(function (err) {
-          e.target.checked = !on;
           setStatus('Could not save: ' + (err && err.message || err), 'error');
         });
       });

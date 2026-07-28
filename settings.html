@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <title>Label Manager settings</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="./css/powerup.css?v=4">
+  <link rel="stylesheet" href="./css/powerup.css?v=5">
 </head>
 <body>
   <div class="settings" id="settings">
@@ -21,13 +21,18 @@
         Custom ordering itself works without it.</p>
     </section>
     <section>
-      <h3>Card front</h3>
-      <label class="rowline" style="cursor:pointer">
-        <span class="muted">Also show labels in your order as badges on card fronts</span>
-        <input type="checkbox" id="chk-badges">
-      </label>
-      <p class="muted">Trello's own colored chips stay as they are — this adds a second,
-        correctly ordered row beneath them.</p>
+      <h3>Card front badges</h3>
+      <div class="rowline">
+        <span class="muted">Show on card fronts</span>
+        <select id="sel-badges">
+          <option value="off">Nothing (default)</option>
+          <option value="priority">Priority labels only</option>
+          <option value="all">All labels, in my order</option>
+        </select>
+      </div>
+      <p class="muted">Trello's own colored chips stay as they are — this adds a second row
+        beneath them. <strong>Priority labels only</strong> keeps that row short: just the
+        labels you starred in Label Order.</p>
     </section>
     <section>
       <h3>Custom order</h3>
@@ -39,11 +44,11 @@
     <div id="status" class="status" role="status"></div>
   </div>
 
-  <script src="./js/config.js?v=4"></script>
-  <script src="./js/boot.js?v=4"></script>
-  <script src="./js/labels.js?v=4"></script>
-  <script src="./js/order.js?v=4"></script>
-  <script src="./js/api.js?v=4"></script>
-  <script src="./js/settings.js?v=4"></script>
+  <script src="./js/config.js?v=5"></script>
+  <script src="./js/boot.js?v=5"></script>
+  <script src="./js/labels.js?v=5"></script>
+  <script src="./js/order.js?v=5"></script>
+  <script src="./js/api.js?v=5"></script>
+  <script src="./js/settings.js?v=5"></script>
 </body>
 </html>

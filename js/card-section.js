@@ -28,24 +28,32 @@
     }
   }
 
-  function render(labels) {
+  function chipFor(label, isPriority) {
+    var info = LABELS.colorInfo(label.color);
+    var chip = el('span', 'chip small' + (isPriority ? ' is-priority' : ''));
+    chip.style.background = info.bg;
+    chip.style.color = info.fg;
+    if (isPriority) chip.title = 'Priority label';
+    var text = el('span', 'chip-text', label.name || info.name);
+    if (!label.name) text.style.fontStyle = 'italic';
+    chip.appendChild(text);
+    return chip;
+  }
+
+  function render(labels, prioritySet) {
     chipsEl.textContent = '';
     if (!labels.length) {
       chipsEl.appendChild(el('span', 'muted', 'No labels on this card yet.'));
       resize();
       return;
     }
-    labels.forEach(function (label, i) {
-      var info = LABELS.colorInfo(label.color);
-      var chip = el('span', 'chip small');
-      chip.style.background = info.bg;
-      chip.style.color = info.fg;
-      chip.title = (i + 1) + ' of ' + labels.length + ' in your custom order';
-      var text = el('span', 'chip-text', label.name || info.name);
-      if (!label.name) text.style.fontStyle = 'italic';
-      chip.appendChild(text);
-      chipsEl.appendChild(chip);
-    });
+    // Starred labels lead, so "needs attention" is never buried mid-row.
+    var split = ORDER.partition(labels, prioritySet);
+    split[0].forEach(function (l) { chipsEl.appendChild(chipFor(l, true)); });
+    if (split[0].length && split[1].length) {
+      chipsEl.appendChild(el('span', 'chip-divider'));
+    }
+    split[1].forEach(function (l) { chipsEl.appendChild(chipFor(l, false)); });
     resize();
   }
 
@@ -53,11 +61,12 @@
     return Promise.all([
       t.card('labels'),
       ORDER.loadOrder(t),
+      ORDER.loadPriority(t),
     ]).then(function (res) {
       var onCard = res[0].labels || [];
       // applyOrder ranks against the board-wide order; labels not in it fall
       // to the end in Trello's native order.
-      render(ORDER.applyOrder(onCard, res[1]));
+      render(ORDER.applyOrder(onCard, res[1]), res[2]);
     }).catch(function (err) {
       statusEl.textContent = 'Could not load labels: ' + (err && err.message || err);
       statusEl.className = 'status error';

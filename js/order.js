@@ -124,8 +124,59 @@
     return t.remove('board', 'shared', STORAGE_KEY);
   }
 
+  /*
+   * Priority labels — a small, board-shared set the team wants kept front and
+   * centre (e.g. "needs attention" reds), independent of the custom order.
+   *
+   * Stored as bare 8-char id suffixes; unlike the order there is no full-id
+   * fallback, because the worst case of a suffix collision here is one label
+   * wrongly starred rather than a scrambled order.
+   */
+  var PRIORITY_KEY = 'priority';
+
+  function encodeIds(labels) {
+    return VERSION_PREFIX + labels.map(function (l) { return suffix(l.id); }).join(',');
+  }
+
+  function decodeIds(str) {
+    var set = new Set();
+    if (typeof str !== 'string' || str.indexOf(VERSION_PREFIX) !== 0) return set;
+    str.slice(VERSION_PREFIX.length).split(',').forEach(function (e) {
+      if (e) set.add(e);
+    });
+    return set;
+  }
+
+  function hasId(set, id) {
+    return set.has(suffix(id));
+  }
+
+  function loadPriority(t) {
+    return t.get('board', 'shared', PRIORITY_KEY, '').then(decodeIds);
+  }
+
+  function savePriority(t, labels) {
+    return t.set('board', 'shared', PRIORITY_KEY, encodeIds(labels));
+  }
+
+  // Splits labels into [priority, rest], each keeping its incoming order.
+  function partition(labels, prioritySet) {
+    var hi = [], lo = [];
+    labels.forEach(function (l) {
+      (hasId(prioritySet, l.id) ? hi : lo).push(l);
+    });
+    return [hi, lo];
+  }
+
   window.LM_ORDER = {
     STORAGE_KEY: STORAGE_KEY,
+    PRIORITY_KEY: PRIORITY_KEY,
+    encodeIds: encodeIds,
+    decodeIds: decodeIds,
+    hasId: hasId,
+    loadPriority: loadPriority,
+    savePriority: savePriority,
+    partition: partition,
     encode: encode,
     decode: decode,
     applyOrder: applyOrder,

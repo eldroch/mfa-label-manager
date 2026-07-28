@@ -43,7 +43,7 @@ window.LM_CONFIG = {
  * BUMP THIS ON EVERY DEPLOY, and keep the ?v= values on the <script>/<link>
  * tags in the .html files in sync with it.
  */
-window.LM_CONFIG.VERSION = '4';
+window.LM_CONFIG.VERSION = '5';
 
 (function () {
   var LM_KEY_PARAM = 'lmKey';

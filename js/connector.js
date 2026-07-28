@@ -11,6 +11,20 @@
     light: new URL('./icons/tag-dark.svg', window.location.href).href,  // shown on light backgrounds
   };
 
+  /*
+   * Card-front badge mode: 'off' | 'priority' | 'all'.
+   * Falls back to the older boolean setting so boards configured before this
+   * option existed keep behaving the same.
+   */
+  function badgeMode(t) {
+    return t.get('board', 'shared', 'badgeMode', null).then(function (mode) {
+      if (mode) return mode;
+      return t.get('board', 'shared', 'showBadges', false).then(function (on) {
+        return on ? 'all' : 'off';
+      });
+    });
+  }
+
   // Absolute URL of the swatch icon for a label color (see card-badges).
   function swatchUrl(color) {
     var name = color && window.LM_LABELS.COLOR_ORDER.indexOf(color) !== -1 ? color : 'none';
@@ -94,15 +108,27 @@
        * they are rendered by Trello's page, not from inside our iframe.
        */
       'card-badges': function (t) {
-        return t.get('board', 'shared', 'showBadges', false).then(function (enabled) {
-          if (!enabled) return [];
-          return Promise.all([t.card('labels'), window.LM_ORDER.loadOrder(t)]).then(function (res) {
+        return badgeMode(t).then(function (mode) {
+          if (mode === 'off') return [];
+          return Promise.all([
+            t.card('labels'),
+            window.LM_ORDER.loadOrder(t),
+            window.LM_ORDER.loadPriority(t),
+          ]).then(function (res) {
             var onCard = res[0].labels || [];
             if (!onCard.length) return [];
-            return window.LM_ORDER.applyOrder(onCard, res[1]).map(function (label) {
+            var ordered = window.LM_ORDER.applyOrder(onCard, res[1]);
+            var split = window.LM_ORDER.partition(ordered, res[2]);
+            // 'priority' keeps the badge row short: only starred labels, which
+            // is the point — high-signal labels first and nothing else.
+            var shown = mode === 'priority' ? split[0] : split[0].concat(split[1]);
+            return shown.map(function (label) {
               return {
                 text: label.name || window.LM_LABELS.colorInfo(label.color).name,
                 icon: swatchUrl(label.color),
+                // Without this Trello treats the icon as a monochrome glyph
+                // and filters it to the theme colour, turning every swatch black.
+                monochrome: false,
               };
             });
           });

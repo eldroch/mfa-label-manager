@@ -45,6 +45,11 @@ red, purple, blue, sky, lime, pink, black), each hue cycling subtle → normal �
 - Board button **“Label Order”** → drag-and-drop manager (also ▲/▼ buttons), autosaves for the
   whole board, plus label create / rename / recolor / delete.
 - Card button **“Labels (your order)”** → ordered picker with filter and one-click toggling.
+- **Priority labels**: star any label in the manager (★) to mark it high-signal. Starring does
+  not move it in the custom order — it marks it for the surfaces that show a short list:
+  starred labels lead the card-back section (with a divider), and the card-front badge row can be
+  set to show *only* starred labels. This is the answer to "our red needs-attention labels get
+  buried mid-row": a two- or three-item badge row at the top of the card, instead of every label.
 - **Sort presets**: restore Trello's native order or A→Z.
 - **Prefix sync** and **recolor sync** (with undo) as described above.
 - Settings popup: authorization status, disconnect, reset order.
@@ -205,7 +210,9 @@ onto the popup/modal iframe URLs automatically.
 - **Card-front badges show color as a swatch icon, not as the badge color.** Badge `color` accepts
   only ten base names, which would render subtle/normal/bold of a hue identically and misstate the
   label; each badge instead carries an icon in the exact palette color (`icons/swatches/`,
-  regenerate with `node dev/make-swatches.js`).
+  regenerate with `node dev/make-swatches.js`). Those badges **must** set `monochrome: false` —
+  by default Trello treats a badge icon as a glyph and filters it to the theme color, which turns
+  every swatch black.
 - **Big boards**: Trello allows ~950–1000 labels per board. Board-level Power-Up storage is
   8 KB, so the custom order is kept for roughly the first 790 labels (you'll see a notice if
   truncation ever happens; drag-ordering hundreds of labels is not a realistic workflow anyway).
